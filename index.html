@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,5 +7,176 @@
 </head>
 <body>
   <h1>Loan Simulator</h1>
+
+  <form id="loan-form">
+    <p>
+      <label for="amount">Monto del préstamo:</label>
+      <input
+        id="amount"
+        type="number"
+        min="0.01"
+        step="0.01"
+        required
+      >
+    </p>
+
+    <p>
+      <label for="rate">Tasa de interés (%):</label>
+      <input
+        id="rate"
+        type="number"
+        min="0"
+        step="any"
+        required
+      >
+    </p>
+
+    <p>
+      <label for="rate-type">Tipo de tasa:</label>
+      <select id="rate-type">
+        <option value="monthly">Efectiva mensual</option>
+        <option value="annual">Efectiva anual</option>
+      </select>
+    </p>
+
+    <p>
+      <label for="months">Plazo en meses:</label>
+      <input
+        id="months"
+        type="number"
+        min="1"
+        max="1200"
+        step="1"
+        required
+      >
+    </p>
+
+    <button type="submit">Calcular</button>
+  </form>
+
+  <p id="error" role="alert"></p>
+
+  <section id="results" hidden>
+    <h2>Resultado del préstamo</h2>
+
+    <p>Cuota mensual: <strong id="payment"></strong></p>
+    <p>Total de intereses: <strong id="total-interest"></strong></p>
+    <p>Total a pagar: <strong id="total-paid"></strong></p>
+
+    <h2>Tabla de amortización</h2>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th scope="col">Mes</th>
+          <th scope="col">Cuota</th>
+          <th scope="col">Interés</th>
+          <th scope="col">Abono a capital</th>
+          <th scope="col">Saldo pendiente</th>
+        </tr>
+      </thead>
+      <tbody id="schedule"></tbody>
+    </table>
+  </section>
+
+  <script>
+    const form = document.getElementById("loan-form");
+    const results = document.getElementById("results");
+    const error = document.getElementById("error");
+    const schedule = document.getElementById("schedule");
+
+    const format = (value) => value.toLocaleString("es-CO", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      results.hidden = true;
+      error.textContent = "";
+      schedule.replaceChildren();
+
+      const amount = Number(document.getElementById("amount").value);
+      const rate = Number(document.getElementById("rate").value);
+      const months = Number(document.getElementById("months").value);
+      const rateType = document.getElementById("rate-type").value;
+
+      if (
+        !Number.isFinite(amount) ||
+        !Number.isFinite(rate) ||
+        amount <= 0 ||
+        rate < 0 ||
+        !Number.isInteger(months) ||
+        months < 1 ||
+        months > 1200
+      ) {
+        error.textContent = "Revisa el monto, la tasa y el plazo.";
+        return;
+      }
+
+      const monthlyRate = rateType === "annual"
+        ? Math.expm1(Math.log1p(rate / 100) / 12)
+        : rate / 100;
+
+      const payment = monthlyRate === 0
+        ? amount / months
+        : amount * monthlyRate /
+          (-Math.expm1(-months * Math.log1p(monthlyRate)));
+
+      if (!Number.isFinite(payment)) {
+        error.textContent = "Los valores son demasiado grandes.";
+        return;
+      }
+
+      let balance = amount;
+      let totalInterest = 0;
+      let totalPaid = 0;
+
+      const rows = document.createDocumentFragment();
+
+      for (let month = 1; month <= months; month++) {
+        const interest = balance * monthlyRate;
+
+        const principal = month === months
+          ? balance
+          : Math.min(balance, Math.max(0, payment - interest));
+
+        const currentPayment = principal + interest;
+
+        balance = Math.max(0, balance - principal);
+        totalInterest += interest;
+        totalPaid += currentPayment;
+
+        const row = document.createElement("tr");
+
+        const values = [
+          month,
+          format(currentPayment),
+          format(interest),
+          format(principal),
+          format(balance)
+        ];
+
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        }
+
+        rows.appendChild(row);
+      }
+
+      schedule.appendChild(rows);
+
+      document.getElementById("payment").textContent = format(payment);
+      document.getElementById("total-interest").textContent =
+        format(totalInterest);
+      document.getElementById("total-paid").textContent =
+        format(totalPaid);
+
+      results.hidden = false;
+    });
+  </script>
 </body>
 </html>
