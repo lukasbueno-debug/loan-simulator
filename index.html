@@ -7,6 +7,7 @@
 
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       padding: 40px 20px;
@@ -15,15 +16,13 @@
       font-family: Arial, sans-serif;
       line-height: 1.5;
     }
+
     main { max-width: 960px; margin: auto; }
     header { margin-bottom: 28px; }
-    h1 {
-      margin: 0;
-      font-size: clamp(30px, 5vw, 44px);
-      color: #102444;
-    }
+    h1 { margin: 0; font-size: clamp(30px, 5vw, 44px); }
     header p { color: #526480; }
     .language { max-width: 220px; margin-bottom: 24px; }
+
     form, #results {
       padding: 28px;
       border: 1px solid #dbe4ef;
@@ -31,17 +30,20 @@
       background: white;
       box-shadow: 0 10px 30px #172b4d0a;
     }
+
     form {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 20px;
     }
+
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
       font-size: 14px;
     }
+
     input, select {
       width: 100%;
       padding: 13px;
@@ -51,12 +53,13 @@
       color: #172b4d;
       font: inherit;
     }
+
     input:focus, select:focus {
       outline: 3px solid #b8d5ff;
       outline-offset: 2px;
     }
+
     button {
-      grid-column: 1 / -1;
       padding: 15px;
       border: 0;
       border-radius: 9px;
@@ -66,19 +69,25 @@
       font-weight: bold;
       cursor: pointer;
     }
+
+    form button { grid-column: 1 / -1; }
     button:hover { background: #10378f; }
+
     button:focus-visible {
       outline: 3px solid #2563eb;
       outline-offset: 3px;
     }
+
     #results { margin-top: 28px; }
     h2 { margin-top: 0; font-size: 22px; }
+
     .summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 28px;
     }
+
     .summary p {
       margin: 0;
       padding: 16px;
@@ -86,6 +95,7 @@
       border-radius: 10px;
       font-size: 14px;
     }
+
     .summary strong {
       display: block;
       margin-top: 8px;
@@ -93,31 +103,72 @@
       font-size: 22px;
       overflow-wrap: anywhere;
     }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
     .table-container { overflow-x: auto; }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
       font-variant-numeric: tabular-nums;
     }
+
     th, td {
       padding: 13px;
       border-bottom: 1px solid #e2e8f0;
       text-align: right;
       white-space: nowrap;
     }
+
     th { background: #172b4d; color: white; }
     th:first-child, td:first-child { text-align: left; }
     tbody tr:nth-child(even) { background: #f5f8fc; }
-    tbody tr:hover { background: #eaf2ff; }
     #error { color: #b42318; font-weight: bold; }
     #error:empty { display: none; }
+
     @media (max-width: 600px) {
       form, .summary { grid-template-columns: 1fr; }
       form, #results { padding: 20px; }
       body { padding: 24px 14px; }
     }
+
+    @media print {
+      @page { size: A4; margin: 15mm; }
+
+      body {
+        padding: 0;
+        background: white;
+        color: black;
+      }
+
+      .language, form, .actions, #error { display: none; }
+
+      #results {
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .summary { grid-template-columns: repeat(3, 1fr); }
+      .summary strong { font-size: 16px; }
+      .table-container { overflow: visible; }
+      table { font-size: 10px; }
+      th, td { padding: 6px; white-space: normal; }
+      th { background: white; color: black; }
+      thead { display: table-header-group; }
+      tr { break-inside: avoid; }
+    }
   </style>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body>
@@ -162,16 +213,14 @@
                min="1" max="1200" step="1" required>
       </div>
 
-      <button type="submit">
-        <span aria-hidden="true">▦</span>
-        <span data-text="calculate"></span>
-      </button>
+      <button type="submit" data-text="calculate"></button>
     </form>
 
     <p id="error" role="alert"></p>
 
     <section id="results" hidden>
       <h2 data-text="result"></h2>
+      <p id="details"></p>
 
       <div class="summary">
         <p>
@@ -188,7 +237,15 @@
         </p>
       </div>
 
+      <div class="actions">
+        <button id="print-button" type="button"
+                data-text="print"></button>
+        <button id="pdf-button" type="button"
+                data-text="pdf"></button>
+      </div>
+
       <h2 data-text="schedule"></h2>
+
       <div class="table-container">
         <table>
           <thead>
@@ -228,9 +285,13 @@
         interest: "Interés",
         principal: "Abono a capital",
         balance: "Saldo pendiente",
+        print: "Imprimir",
+        pdf: "Descargar PDF",
         invalid: "Revisa el monto, la tasa y el plazo.",
-        tooLarge: "Los valores son demasiado grandes."
+        tooLarge: "Los valores son demasiado grandes.",
+        pdfError: "No se pudo generar el PDF. Revisa tu conexión y recarga la página."
       },
+
       en: {
         intro: "Calculate your monthly payment and view your repayment plan.",
         language: "Language",
@@ -251,8 +312,11 @@
         interest: "Interest",
         principal: "Principal repayment",
         balance: "Remaining balance",
+        print: "Print",
+        pdf: "Download PDF",
         invalid: "Check the amount, interest rate and term.",
-        tooLarge: "The values are too large."
+        tooLarge: "The values are too large.",
+        pdfError: "Could not generate the PDF. Check your connection and reload the page."
       }
     };
 
@@ -268,15 +332,29 @@
     function format(value) {
       return value.toLocaleString(
         language === "es" ? "es-CO" : "en-US",
-        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
       );
+    }
+
+    function details() {
+      const t = translations[language];
+
+      return `${t.amount}: ${format(simulation.amount)} | ` +
+        `${t.rate}: ${simulation.rate} | ` +
+        `${t[simulation.rateType]} | ` +
+        `${t.months}: ${simulation.months}`;
     }
 
     function renderResults() {
       schedule.replaceChildren();
       results.hidden = simulation === null;
+
       if (!simulation) return;
 
+      document.getElementById("details").textContent = details();
       document.getElementById("payment").textContent =
         format(simulation.payment);
       document.getElementById("total-interest").textContent =
@@ -330,10 +408,14 @@
       error.textContent = "";
       renderResults();
 
-      const amount = Number(document.getElementById("amount").value);
-      const rate = Number(document.getElementById("rate").value);
-      const months = Number(document.getElementById("months").value);
-      const rateType = document.getElementById("rate-type").value;
+      const amount =
+        Number(document.getElementById("amount").value);
+      const rate =
+        Number(document.getElementById("rate").value);
+      const months =
+        Number(document.getElementById("months").value);
+      const rateType =
+        document.getElementById("rate-type").value;
 
       if (
         !Number.isFinite(amount) ||
@@ -371,23 +453,110 @@
 
       for (let month = 1; month <= months; month++) {
         const interest = balance * monthlyRate;
+
         const principal = month === months
           ? balance
           : Math.min(balance, Math.max(0, payment - interest));
 
         const currentPayment = principal + interest;
+
         balance = Math.max(0, balance - principal);
         totalInterest += interest;
         totalPaid += currentPayment;
 
         rows.push([
-          month, currentPayment, interest, principal, balance
+          month,
+          currentPayment,
+          interest,
+          principal,
+          balance
         ]);
       }
 
-      simulation = { payment, totalInterest, totalPaid, rows };
+      simulation = {
+        amount,
+        rate,
+        rateType,
+        months,
+        payment,
+        totalInterest,
+        totalPaid,
+        rows
+      };
+
       renderResults();
     });
+
+    document.getElementById("print-button")
+      .addEventListener("click", () => {
+        if (simulation) window.print();
+      });
+
+    document.getElementById("pdf-button")
+      .addEventListener("click", () => {
+        if (!simulation) return;
+
+        try {
+          const t = translations[language];
+          const doc = new window.jspdf.jsPDF();
+
+          doc.setFontSize(20);
+          doc.text("Loan Simulator", 14, 20);
+          doc.setFontSize(10);
+
+          const lines = doc.splitTextToSize(details(), 180);
+          doc.text(lines, 14, 30);
+
+          const y = 30 + lines.length * 5 + 7;
+
+          doc.text(
+            `${t.payment}: ${format(simulation.payment)}`,
+            14, y
+          );
+
+          doc.text(
+            `${t.totalInterest}: ${format(simulation.totalInterest)}`,
+            14, y + 7
+          );
+
+          doc.text(
+            `${t.totalPaid}: ${format(simulation.totalPaid)}`,
+            14, y + 14
+          );
+
+          doc.autoTable({
+            startY: y + 23,
+            head: [[
+              t.month,
+              t.installment,
+              t.interest,
+              t.principal,
+              t.balance
+            ]],
+            body: simulation.rows.map(row =>
+              row.map((value, index) =>
+                index === 0 ? value : format(value)
+              )
+            ),
+            theme: "striped",
+            headStyles: { fillColor: [23, 43, 77] },
+            styles: { fontSize: 9 },
+            margin: {
+              top: 15,
+              right: 14,
+              bottom: 15,
+              left: 14
+            }
+          });
+
+          doc.save("loan-simulator.pdf");
+          errorKey = "";
+          error.textContent = "";
+        } catch (problem) {
+          errorKey = "pdfError";
+          error.textContent = translations[language][errorKey];
+        }
+      });
 
     applyLanguage();
   </script>
