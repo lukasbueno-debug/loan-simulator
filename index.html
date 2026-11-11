@@ -7,7 +7,6 @@
 
   <style>
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       padding: 40px 20px;
@@ -16,19 +15,15 @@
       font-family: Arial, sans-serif;
       line-height: 1.5;
     }
-
     main { max-width: 960px; margin: auto; }
-
     header { margin-bottom: 28px; }
-
     h1 {
       margin: 0;
       font-size: clamp(30px, 5vw, 44px);
       color: #102444;
     }
-
-    header p { margin-top: 6px; color: #526480; }
-
+    header p { color: #526480; }
+    .language { max-width: 220px; margin-bottom: 24px; }
     form, #results {
       padding: 28px;
       border: 1px solid #dbe4ef;
@@ -36,20 +31,17 @@
       background: white;
       box-shadow: 0 10px 30px #172b4d0a;
     }
-
     form {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 20px;
     }
-
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
       font-size: 14px;
     }
-
     input, select {
       width: 100%;
       padding: 13px;
@@ -59,12 +51,10 @@
       color: #172b4d;
       font: inherit;
     }
-
     input:focus, select:focus {
       outline: 3px solid #b8d5ff;
       outline-offset: 2px;
     }
-
     button {
       grid-column: 1 / -1;
       padding: 15px;
@@ -76,25 +66,19 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:hover { background: #10378f; }
-
     button:focus-visible {
       outline: 3px solid #2563eb;
       outline-offset: 3px;
     }
-
     #results { margin-top: 28px; }
-
     h2 { margin-top: 0; font-size: 22px; }
-
     .summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 28px;
     }
-
     .summary p {
       margin: 0;
       padding: 16px;
@@ -102,7 +86,6 @@
       border-radius: 10px;
       font-size: 14px;
     }
-
     .summary strong {
       display: block;
       margin-top: 8px;
@@ -110,31 +93,25 @@
       font-size: 22px;
       overflow-wrap: anywhere;
     }
-
     .table-container { overflow-x: auto; }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
       font-variant-numeric: tabular-nums;
     }
-
     th, td {
       padding: 13px;
       border-bottom: 1px solid #e2e8f0;
       text-align: right;
       white-space: nowrap;
     }
-
     th { background: #172b4d; color: white; }
     th:first-child, td:first-child { text-align: left; }
     tbody tr:nth-child(even) { background: #f5f8fc; }
     tbody tr:hover { background: #eaf2ff; }
-
     #error { color: #b42318; font-weight: bold; }
     #error:empty { display: none; }
-
     @media (max-width: 600px) {
       form, .summary { grid-template-columns: 1fr; }
       form, #results { padding: 20px; }
@@ -147,63 +124,80 @@
   <main>
     <header>
       <h1>Loan Simulator</h1>
-      <p>Calcula tu cuota mensual y consulta tu plan de pagos.</p>
+      <p data-text="intro"></p>
     </header>
+
+    <div class="language">
+      <label for="language" data-text="language"></label>
+      <select id="language">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+    </div>
 
     <form id="loan-form">
       <div>
-        <label for="amount">Monto del préstamo</label>
+        <label for="amount" data-text="amount"></label>
         <input id="amount" type="number"
                min="0.01" step="0.01" required>
       </div>
 
       <div>
-        <label for="rate">Tasa de interés (%)</label>
+        <label for="rate" data-text="rate"></label>
         <input id="rate" type="number"
                min="0" step="any" required>
       </div>
 
       <div>
-        <label for="rate-type">Tipo de tasa</label>
+        <label for="rate-type" data-text="rateType"></label>
         <select id="rate-type">
-          <option value="monthly">Efectiva mensual</option>
-          <option value="annual">Efectiva anual</option>
+          <option value="monthly" data-text="monthly"></option>
+          <option value="annual" data-text="annual"></option>
         </select>
       </div>
 
       <div>
-        <label for="months">Plazo en meses</label>
+        <label for="months" data-text="months"></label>
         <input id="months" type="number"
                min="1" max="1200" step="1" required>
       </div>
 
       <button type="submit">
-        <span aria-hidden="true">▦</span> Calcular préstamo
+        <span aria-hidden="true">▦</span>
+        <span data-text="calculate"></span>
       </button>
     </form>
 
     <p id="error" role="alert"></p>
 
     <section id="results" hidden>
-      <h2>Resultado del préstamo</h2>
+      <h2 data-text="result"></h2>
 
       <div class="summary">
-        <p>Cuota mensual <strong id="payment"></strong></p>
-        <p>Total de intereses <strong id="total-interest"></strong></p>
-        <p>Total a pagar <strong id="total-paid"></strong></p>
+        <p>
+          <span data-text="payment"></span>
+          <strong id="payment"></strong>
+        </p>
+        <p>
+          <span data-text="totalInterest"></span>
+          <strong id="total-interest"></strong>
+        </p>
+        <p>
+          <span data-text="totalPaid"></span>
+          <strong id="total-paid"></strong>
+        </p>
       </div>
 
-      <h2>Tabla de amortización</h2>
-
+      <h2 data-text="schedule"></h2>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th scope="col">Mes</th>
-              <th scope="col">Cuota</th>
-              <th scope="col">Interés</th>
-              <th scope="col">Abono a capital</th>
-              <th scope="col">Saldo pendiente</th>
+              <th scope="col" data-text="month"></th>
+              <th scope="col" data-text="installment"></th>
+              <th scope="col" data-text="interest"></th>
+              <th scope="col" data-text="principal"></th>
+              <th scope="col" data-text="balance"></th>
             </tr>
           </thead>
           <tbody id="schedule"></tbody>
@@ -213,22 +207,128 @@
   </main>
 
   <script>
+    const translations = {
+      es: {
+        intro: "Calcula tu cuota mensual y consulta tu plan de pagos.",
+        language: "Idioma",
+        amount: "Monto del préstamo",
+        rate: "Tasa de interés (%)",
+        rateType: "Tipo de tasa",
+        monthly: "Efectiva mensual",
+        annual: "Efectiva anual",
+        months: "Plazo en meses",
+        calculate: "Calcular préstamo",
+        result: "Resultado del préstamo",
+        payment: "Cuota mensual",
+        totalInterest: "Total de intereses",
+        totalPaid: "Total a pagar",
+        schedule: "Tabla de amortización",
+        month: "Mes",
+        installment: "Cuota",
+        interest: "Interés",
+        principal: "Abono a capital",
+        balance: "Saldo pendiente",
+        invalid: "Revisa el monto, la tasa y el plazo.",
+        tooLarge: "Los valores son demasiado grandes."
+      },
+      en: {
+        intro: "Calculate your monthly payment and view your repayment plan.",
+        language: "Language",
+        amount: "Loan amount",
+        rate: "Interest rate (%)",
+        rateType: "Interest rate type",
+        monthly: "Effective monthly",
+        annual: "Effective annual",
+        months: "Term in months",
+        calculate: "Calculate loan",
+        result: "Loan results",
+        payment: "Monthly payment",
+        totalInterest: "Total interest",
+        totalPaid: "Total repayment",
+        schedule: "Amortization schedule",
+        month: "Month",
+        installment: "Payment",
+        interest: "Interest",
+        principal: "Principal repayment",
+        balance: "Remaining balance",
+        invalid: "Check the amount, interest rate and term.",
+        tooLarge: "The values are too large."
+      }
+    };
+
     const form = document.getElementById("loan-form");
     const results = document.getElementById("results");
     const error = document.getElementById("error");
     const schedule = document.getElementById("schedule");
 
-    const format = (value) => value.toLocaleString("es-CO", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    let language = "es";
+    let simulation = null;
+    let errorKey = "";
+
+    function format(value) {
+      return value.toLocaleString(
+        language === "es" ? "es-CO" : "en-US",
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      );
+    }
+
+    function renderResults() {
+      schedule.replaceChildren();
+      results.hidden = simulation === null;
+      if (!simulation) return;
+
+      document.getElementById("payment").textContent =
+        format(simulation.payment);
+      document.getElementById("total-interest").textContent =
+        format(simulation.totalInterest);
+      document.getElementById("total-paid").textContent =
+        format(simulation.totalPaid);
+
+      const fragment = document.createDocumentFragment();
+
+      for (const values of simulation.rows) {
+        const row = document.createElement("tr");
+
+        values.forEach((value, index) => {
+          const cell = document.createElement("td");
+          cell.textContent = index === 0 ? value : format(value);
+          row.appendChild(cell);
+        });
+
+        fragment.appendChild(row);
+      }
+
+      schedule.appendChild(fragment);
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = language;
+
+      document.querySelectorAll("[data-text]").forEach(element => {
+        element.textContent =
+          translations[language][element.dataset.text];
+      });
+
+      error.textContent = errorKey
+        ? translations[language][errorKey]
+        : "";
+
+      renderResults();
+    }
+
+    document.getElementById("language")
+      .addEventListener("change", function () {
+        language = this.value;
+        applyLanguage();
+      });
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
 
-      results.hidden = true;
+      simulation = null;
+      errorKey = "";
       error.textContent = "";
-      schedule.replaceChildren();
+      renderResults();
 
       const amount = Number(document.getElementById("amount").value);
       const rate = Number(document.getElementById("rate").value);
@@ -244,7 +344,8 @@
         months < 1 ||
         months > 1200
       ) {
-        error.textContent = "Revisa el monto, la tasa y el plazo.";
+        errorKey = "invalid";
+        applyLanguage();
         return;
       }
 
@@ -258,18 +359,18 @@
           (-Math.expm1(-months * Math.log1p(monthlyRate)));
 
       if (!Number.isFinite(payment)) {
-        error.textContent = "Los valores son demasiado grandes.";
+        errorKey = "tooLarge";
+        applyLanguage();
         return;
       }
 
       let balance = amount;
       let totalInterest = 0;
       let totalPaid = 0;
-      const rows = document.createDocumentFragment();
+      const rows = [];
 
       for (let month = 1; month <= months; month++) {
         const interest = balance * monthlyRate;
-
         const principal = month === months
           ? balance
           : Math.min(balance, Math.max(0, payment - interest));
@@ -279,33 +380,16 @@
         totalInterest += interest;
         totalPaid += currentPayment;
 
-        const row = document.createElement("tr");
-        const values = [
-          month,
-          format(currentPayment),
-          format(interest),
-          format(principal),
-          format(balance)
-        ];
-
-        for (const value of values) {
-          const cell = document.createElement("td");
-          cell.textContent = value;
-          row.appendChild(cell);
-        }
-
-        rows.appendChild(row);
+        rows.push([
+          month, currentPayment, interest, principal, balance
+        ]);
       }
 
-      schedule.appendChild(rows);
-      document.getElementById("payment").textContent = format(payment);
-      document.getElementById("total-interest").textContent =
-        format(totalInterest);
-      document.getElementById("total-paid").textContent =
-        format(totalPaid);
-
-      results.hidden = false;
+      simulation = { payment, totalInterest, totalPaid, rows };
+      renderResults();
     });
+
+    applyLanguage();
   </script>
 </body>
 </html>
